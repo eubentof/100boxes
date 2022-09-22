@@ -1,0 +1,55 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container button {
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    grid-gap: 5px;
+}
+
+.grid__empty .box {
+    cursor: pointer;
+}
+
+.box {
+    border: solid 1px gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.part-of-solution {
+    background-color: lightgrey;
+}
+
+.next-option {
+    background-color: lightgreen;
+    cursor: pointer;
+}
+
+.current-box {
+    background-color: greenyellow;
+}
+
+.game-over .box.current-box {
+    cursor: default;
+    pointer-events: none;
+    background-color: orangered;
+}
+
+.game-finished .box {
+    cursor: default;
+    pointer-events: none;
+    background-color: lightgreen;
+}
