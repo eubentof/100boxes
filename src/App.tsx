@@ -1,6 +1,8 @@
 import { Component, createEffect, createSignal, For } from "solid-js";
 
-import styles from "./styles.module.css";
+import styles from "./css/styles.module.css";
+import { Header } from "./Header";
+import { ResetButton } from "./ResetButton";
 
 const range = ({ begin = 0, end }: { begin?: number; end: number }) =>
     new Array(end - begin).fill(0).map((_, index) => begin + index);
@@ -53,9 +55,11 @@ const App: Component = () => {
     let solutionIndexes: number[] = [];
 
     function setNextMoveOptions() {
+        // Reset the last moves
         validMovesIndexes.forEach((index) =>
             boxesIndexMap[index].setIsNextMove(false)
         );
+        validMovesIndexes = [];
 
         const box = selectedBox();
 
@@ -70,8 +74,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . . . . .
          */
-        if (box.index - 30 > 0) {
-            const topMove = boxesIndexMap[box.index - 30];
+        const topMoveIndex = box.index - 30;
+        if (topMoveIndex > 0) {
+            const topMove = boxesIndexMap[topMoveIndex];
             if (!topMove.isPartOfSolution()) {
                 topMove.setIsNextMove(true);
                 validMovesIndexes.push(topMove.index);
@@ -87,8 +92,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . . . . .
          */
-        if (box.index - 18 > 0) {
-            const topRightMove = boxesIndexMap[box.index - 18];
+        const topRightMoveIndex = box.index - 18;
+        if (topRightMoveIndex > 0) {
+            const topRightMove = boxesIndexMap[topRightMoveIndex];
             if (
                 topRightMove.col > box.col &&
                 !topRightMove.isPartOfSolution()
@@ -107,8 +113,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . . . . .
          */
-        if (box.index + 2 <= 100) {
-            const rightMove = boxesIndexMap[box.index + 3];
+        const rightMoveIndex = box.index + 3;
+        if (rightMoveIndex <= 100) {
+            const rightMove = boxesIndexMap[rightMoveIndex];
             if (rightMove.row === box.row && !rightMove.isPartOfSolution()) {
                 rightMove.setIsNextMove(true);
                 validMovesIndexes.push(rightMove.index);
@@ -124,8 +131,9 @@ const App: Component = () => {
          * . . . . . x .
          * . . . . . . .
          */
-        if (box.index + 22 <= 100) {
-            const rightBottomMove = boxesIndexMap[box.index + 22];
+        const bottomRightMoveIndex = box.index + 22;
+        if (bottomRightMoveIndex <= 100) {
+            const rightBottomMove = boxesIndexMap[bottomRightMoveIndex];
             if (
                 rightBottomMove.col > box.col &&
                 !rightBottomMove.isPartOfSolution()
@@ -144,8 +152,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . x . . .
          */
-        if (box.index + 30 <= 100) {
-            const rightBottomMove = boxesIndexMap[box.index + 30];
+        const bottomMoveIndex = box.index + 30;
+        if (bottomMoveIndex <= 100) {
+            const rightBottomMove = boxesIndexMap[bottomMoveIndex];
             if (!rightBottomMove.isPartOfSolution()) {
                 rightBottomMove.setIsNextMove(true);
                 validMovesIndexes.push(rightBottomMove.index);
@@ -161,8 +170,9 @@ const App: Component = () => {
          * . x . . . . .
          * . . . . . . .
          */
-        if (box.index + 18 <= 100) {
-            const rightBottomMove = boxesIndexMap[box.index + 18];
+        const bottomLeftMoveIndex = box.index + 18;
+        if (bottomLeftMoveIndex <= 100) {
+            const rightBottomMove = boxesIndexMap[bottomLeftMoveIndex];
             if (
                 rightBottomMove.col < box.col &&
                 !rightBottomMove.isPartOfSolution()
@@ -181,8 +191,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . . . . .
          */
-        if (box.index - 3 > 0) {
-            const leftMove = boxesIndexMap[box.index - 3];
+        const leftMoveIndex = box.index - 3;
+        if (leftMoveIndex > 0) {
+            const leftMove = boxesIndexMap[leftMoveIndex];
             if (box.row === leftMove.row && !leftMove.isPartOfSolution()) {
                 leftMove.setIsNextMove(true);
                 validMovesIndexes.push(leftMove.index);
@@ -198,8 +209,9 @@ const App: Component = () => {
          * . . . . . . .
          * . . . . . . .
          */
-        if (box.index - 22 > 0) {
-            const topLeftMove = boxesIndexMap[box.index - 22];
+        const topLeftMoveIndex = box.index - 22;
+        if (topLeftMoveIndex > 0) {
+            const topLeftMove = boxesIndexMap[topLeftMoveIndex];
             if (topLeftMove.row < box.row && !topLeftMove.isPartOfSolution()) {
                 topLeftMove.setIsNextMove(true);
                 validMovesIndexes.push(topLeftMove.index);
@@ -213,18 +225,16 @@ const App: Component = () => {
     }
 
     function makeMove(box: Box) {
-        if (score() == 100) {
+        if (score() == 99) {
             setGameFinished(true);
             return;
         }
 
-        if (
-            gameOver() ||
-            (solutionIndexes.length > 0 &&
-                !validMovesIndexes.includes(box.index)) ||
-            box.isPartOfSolution()
-        )
-            return;
+        const notAValidMove =
+            solutionIndexes.length > 0 &&
+            !validMovesIndexes.includes(box.index);
+
+        if (gameOver() || notAValidMove || box.isPartOfSolution()) return;
 
         solutionIndexes.push(box.index);
         setSelectedBox(box);
@@ -249,6 +259,7 @@ const App: Component = () => {
 
     return (
         <div class={styles.container}>
+            <Header />
             <div
                 class={`
                     ${styles.grid}
@@ -276,14 +287,13 @@ const App: Component = () => {
                             `}
                             style={`width: ${boxSize}px; height: ${boxSize}px`}
                             onClick={() => makeMove(box)}
-                            // onMouseOver={() => setActiveBox(box)}
                         >
                             {box.value()}
                         </div>
                     )}
                 </For>
             </div>
-            <button onClick={resetBoxes}>Reset</button>
+            <ResetButton onReset={resetBoxes} />
         </div>
     );
 };
