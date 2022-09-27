@@ -59,7 +59,6 @@
     user-select: none;
 }
 .game-over .box.current-box,
-.game-finished .box,
 .disabled {
     cursor: default;
     pointer-events: none;

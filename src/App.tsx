@@ -22,10 +22,9 @@ interface Box {
 
 const App: Component = () => {
     const [selectedBox, setSelectedBox] = createSignal<Box>();
-    const [score, setScore] = createSignal(1);
-    const [gameOver, setGameOver] = createSignal(false);
-    const [gameFinished, setGameFinished] = createSignal(false);
+    const [score, setScore] = createSignal(0);
     const [isReplaying, setIsReplaying] = createSignal(false);
+    const [nextMoves, setNextMoves] = createSignal<number[]>([]);
 
     const gameHistory: any = {};
 
@@ -72,15 +71,15 @@ const App: Component = () => {
         return box;
     });
 
-    let validMovesIndexes: number[] = [];
     let solutionIndexes: number[] = [];
 
     function setNextMoveOptions() {
         // Reset the last moves
-        validMovesIndexes.forEach((index) =>
+        nextMoves().forEach((index) =>
             boxesIndexMap[index].setIsNextMove(false)
         );
-        validMovesIndexes = [];
+
+        setNextMoves([]);
 
         const box = selectedBox();
 
@@ -100,7 +99,7 @@ const App: Component = () => {
             const topMove = boxesIndexMap[topMoveIndex];
             if (!topMove.isPartOfSolution()) {
                 topMove.setIsNextMove(true);
-                validMovesIndexes.push(topMove.index);
+                setNextMoves([...nextMoves(), topMove.index]);
             }
         }
 
@@ -121,7 +120,7 @@ const App: Component = () => {
                 !topRightMove.isPartOfSolution()
             ) {
                 topRightMove.setIsNextMove(true);
-                validMovesIndexes.push(topRightMove.index);
+                setNextMoves([...nextMoves(), topRightMove.index]);
             }
         }
 
@@ -139,7 +138,7 @@ const App: Component = () => {
             const rightMove = boxesIndexMap[rightMoveIndex];
             if (rightMove.row === box.row && !rightMove.isPartOfSolution()) {
                 rightMove.setIsNextMove(true);
-                validMovesIndexes.push(rightMove.index);
+                setNextMoves([...nextMoves(), rightMove.index]);
             }
         }
 
@@ -160,7 +159,7 @@ const App: Component = () => {
                 !rightBottomMove.isPartOfSolution()
             ) {
                 rightBottomMove.setIsNextMove(true);
-                validMovesIndexes.push(rightBottomMove.index);
+                setNextMoves([...nextMoves(), rightBottomMove.index]);
             }
         }
 
@@ -178,7 +177,7 @@ const App: Component = () => {
             const rightBottomMove = boxesIndexMap[bottomMoveIndex];
             if (!rightBottomMove.isPartOfSolution()) {
                 rightBottomMove.setIsNextMove(true);
-                validMovesIndexes.push(rightBottomMove.index);
+                setNextMoves([...nextMoves(), rightBottomMove.index]);
             }
         }
 
@@ -199,7 +198,7 @@ const App: Component = () => {
                 !rightBottomMove.isPartOfSolution()
             ) {
                 rightBottomMove.setIsNextMove(true);
-                validMovesIndexes.push(rightBottomMove.index);
+                setNextMoves([...nextMoves(), rightBottomMove.index]);
             }
         }
 
@@ -217,7 +216,7 @@ const App: Component = () => {
             const leftMove = boxesIndexMap[leftMoveIndex];
             if (box.row === leftMove.row && !leftMove.isPartOfSolution()) {
                 leftMove.setIsNextMove(true);
-                validMovesIndexes.push(leftMove.index);
+                setNextMoves([...nextMoves(), leftMove.index]);
             }
         }
 
@@ -235,24 +234,27 @@ const App: Component = () => {
             const topLeftMove = boxesIndexMap[topLeftMoveIndex];
             if (topLeftMove.col < box.col && !topLeftMove.isPartOfSolution()) {
                 topLeftMove.setIsNextMove(true);
-                validMovesIndexes.push(topLeftMove.index);
+                setNextMoves([...nextMoves(), topLeftMove.index]);
             }
         }
-
-        // console.log(validMovesIndexes);
     }
 
     function isCurrentBox(box: Box) {
         return selectedBox()?.index == box.index;
     }
 
-    function revertMove(box: Box) {
-        const revertToIndex = solutionIndexes.indexOf(box.index) + 1
+    function isGameFinished() {
+        return score() === 100;
+    }
 
-        const movesToRemove = solutionIndexes.slice(
-            revertToIndex,
-            solutionIndexes.length
-        );
+    function isGameOver() {
+        return !isGameFinished() && score() > 0 && nextMoves().length === 0;
+    }
+
+    function revertMove(box: Box) {
+        const revertToIndex = solutionIndexes.indexOf(box.index) + 1;
+
+        const movesToRemove = solutionIndexes.slice(revertToIndex);
 
         movesToRemove.forEach((index) => {
             const box = boxesIndexMap[index];
@@ -300,29 +302,19 @@ const App: Component = () => {
             ctrlWasPressed && solutionIndexes.includes(box.index);
         if (isARevertMove) return revertMove(box);
 
-        console.log("Ta fazendo o move");
-
-        if (score() === 100) {
-            box.setIsPartOfSolution(true);
-            box.setValue(score());
-            setGameFinished(true);
-            console.log(solutionIndexes);
-            return;
-        }
+        if (score() === 100) return;
 
         const notAValidMove =
-            solutionIndexes.length > 0 &&
-            !validMovesIndexes.includes(box.index);
+            solutionIndexes.length > 0 && !nextMoves().includes(box.index);
 
-        if (gameOver() || notAValidMove || box.isPartOfSolution()) return;
+        if (isGameOver() || notAValidMove || box.isPartOfSolution()) return;
 
         solutionIndexes.push(box.index);
         box.setIsPartOfSolution(true);
+        setScore(score() + 1);
         box.setValue(score());
         setSelectedBox(box);
         setNextMoveOptions();
-        if (validMovesIndexes.length) setScore(score() + 1);
-        else setGameOver(true);
     }
 
     function resetBoxes() {
@@ -332,13 +324,10 @@ const App: Component = () => {
             box.setIsNextMove(false);
             box.setIsPartOfSolution(false);
             box.setValue(undefined);
-            validMovesIndexes = [];
+            setNextMoves([]);
             solutionIndexes = [];
-            setScore(1);
+            setScore(0);
         });
-
-        setGameOver(false);
-        setGameFinished(false);
     }
 
     function replayGame(winner: WinnerGame) {
@@ -348,20 +337,19 @@ const App: Component = () => {
 
         setIsReplaying(true);
 
-        let score = 1;
-        const speed = 50; // ms
+        const speed = 0; // ms
 
         const replayInterval = setInterval(() => {
-            if (score > winner.game.length) {
+            if (isGameFinished() || isGameOver()) {
                 clearInterval(replayInterval);
                 setIsReplaying(false);
+                console.log("Score: ", score());
                 return;
             }
 
-            const index = winner.game[score - 1];
+            const index = winner.game[score()];
             const box = boxesIndexMap[index];
             makeMove(box, true);
-            score++;
         }, speed);
     }
 
@@ -372,8 +360,8 @@ const App: Component = () => {
                 class={`
                     ${styles.grid}
                     ${!selectedBox() ? styles.grid__empty : ""}
-                    ${gameOver() ? styles["game-over"] : ""} 
-                    ${gameFinished() ? styles["game-finished"] : ""} 
+                    ${isGameOver() ? styles["game-over"] : ""} 
+                    ${isGameFinished() ? styles["game-finished"] : ""} 
                     ${isReplaying() ? styles["replaying-game"] : ""}
                 `}
             >
