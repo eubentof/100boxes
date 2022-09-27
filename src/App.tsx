@@ -27,6 +27,8 @@ const App: Component = () => {
     const [gameFinished, setGameFinished] = createSignal(false);
     const [isReplaying, setIsReplaying] = createSignal(false);
 
+    const gameHistory: any = {};
+
     const winners: WinnerGame[] = [
         {
             date: new Date(),
@@ -285,6 +287,8 @@ const App: Component = () => {
     }
 
     function replayGame(winner: WinnerGame) {
+        resetBoxes();
+        
         console.log(`Replaying ${winner.username}'s game`);
 
         setIsReplaying(true);

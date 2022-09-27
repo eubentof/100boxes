@@ -43,3 +43,5 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 - [ ] Revert the move by right click in the selected box
 - [ ] List the scores made user by datetime
 - [ ] Save the scores in a external source
+- [ ] Add on menu the tips/tutorial
+- [ ] Add on menu the replay velocity control
