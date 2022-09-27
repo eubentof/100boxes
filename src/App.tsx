@@ -233,20 +233,75 @@ const App: Component = () => {
         const topLeftMoveIndex = box.index - 22;
         if (topLeftMoveIndex > 0) {
             const topLeftMove = boxesIndexMap[topLeftMoveIndex];
-            if (topLeftMove.row < box.row && !topLeftMove.isPartOfSolution()) {
+            if (topLeftMove.col < box.col && !topLeftMove.isPartOfSolution()) {
                 topLeftMove.setIsNextMove(true);
                 validMovesIndexes.push(topLeftMove.index);
             }
         }
+
+        // console.log(validMovesIndexes);
     }
 
     function isCurrentBox(box: Box) {
-        const _sBox = selectedBox();
-        return _sBox ? _sBox.index == box.index : false;
+        return selectedBox()?.index == box.index;
     }
 
-    function makeMove(box: Box, fromReplay = false) {
+    function revertMove(box: Box) {
+        const revertToIndex = solutionIndexes.indexOf(box.index) + 1
+
+        const movesToRemove = solutionIndexes.slice(
+            revertToIndex,
+            solutionIndexes.length
+        );
+
+        movesToRemove.forEach((index) => {
+            const box = boxesIndexMap[index];
+            box?.setIsPartOfSolution(false);
+            box?.setValue(undefined);
+        });
+
+        solutionIndexes = solutionIndexes.slice(0, revertToIndex);
+        setScore(score() - movesToRemove.length);
+        selectLastBox();
+    }
+
+    function undoLastMove() {
+        const box = selectedBox();
+
+        if (!box) return;
+
+        solutionIndexes = solutionIndexes.filter(
+            (index) => index !== box.index
+        );
+
+        setScore(score() - 1);
+        box.setIsPartOfSolution(false);
+        box.setValue(undefined);
+        selectLastBox();
+    }
+
+    function selectLastBox() {
+        const lastBoxIndex = solutionIndexes[solutionIndexes.length - 1];
+        const lastBox = boxesIndexMap[lastBoxIndex];
+        setSelectedBox(lastBox);
+        setNextMoveOptions();
+    }
+
+    function makeMove(box: Box, fromReplay = false, e?: MouseEvent) {
         if (isReplaying() && !fromReplay) return;
+
+        const ctrlWasPressed = e && e.ctrlKey;
+
+        const isAnUndoMove =
+            ctrlWasPressed && box.index === selectedBox()?.index;
+        if (isAnUndoMove) return undoLastMove();
+
+        const isARevertMove =
+            ctrlWasPressed && solutionIndexes.includes(box.index);
+        if (isARevertMove) return revertMove(box);
+
+        console.log("Ta fazendo o move");
+
         if (score() === 100) {
             box.setIsPartOfSolution(true);
             box.setValue(score());
@@ -288,7 +343,7 @@ const App: Component = () => {
 
     function replayGame(winner: WinnerGame) {
         resetBoxes();
-        
+
         console.log(`Replaying ${winner.username}'s game`);
 
         setIsReplaying(true);
@@ -341,7 +396,7 @@ const App: Component = () => {
                                 }
                             `}
                             style={`width: ${boxSize}px; height: ${boxSize}px`}
-                            onClick={() => makeMove(box)}
+                            onClick={(e) => makeMove(box, false, e)}
                         >
                             {box.value()}
                         </div>

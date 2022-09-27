@@ -1,7 +1,7 @@
 import { Component } from "solid-js";
 
 export const Button: Component<{
-    onClick?: () => void;
+    onClick?: (e: MouseEvent) => void;
     text: string;
     color?: string;
     disabled?: boolean;

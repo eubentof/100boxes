@@ -40,8 +40,8 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 - [x] Implement the function to check if is a win
 - [x] Implement the function to check if it's game over
 - [x] Implement the function to replay a winner game
-- [ ] Revert the move by right click in the selected box
-- [ ] List the scores made user by datetime
+- [x] List the scores made user by datetime
+- [x] Revert the move by ctrl + click in the selected box
 - [ ] Save the scores in a external source
 - [ ] Add on menu the tips/tutorial
 - [ ] Add on menu the replay velocity control
