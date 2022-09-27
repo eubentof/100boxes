@@ -27,10 +27,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 }
 
 .part-of-solution {
@@ -47,13 +43,24 @@
 }
 
 .game-over .box.current-box {
-    cursor: default;
-    pointer-events: none;
     background-color: orangered;
 }
 
 .game-finished .box {
+    background-color: lightgreen;
+}
+
+.box,
+.disabled,
+.replaying-game {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.game-over .box.current-box,
+.game-finished .box,
+.disabled {
     cursor: default;
     pointer-events: none;
-    background-color: lightgreen;
 }

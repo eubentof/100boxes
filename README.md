@@ -39,6 +39,7 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 - [x] Implement the function to display the valid moves
 - [x] Implement the function to check if is a win
 - [x] Implement the function to check if it's game over
+- [x] Implement the function to replay a winner game
 - [ ] Revert the move by right click in the selected box
 - [ ] List the scores made user by datetime
 - [ ] Save the scores in a external source

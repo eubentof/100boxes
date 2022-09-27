@@ -2,7 +2,8 @@ import { Component, createEffect, createSignal, For } from "solid-js";
 
 import styles from "./css/styles.module.css";
 import { Header } from "./Header";
-import { ResetButton } from "./ResetButton";
+import { Button } from "./Button";
+import { Winners, WinnerGame } from "./Winners";
 
 const range = ({ begin = 0, end }: { begin?: number; end: number }) =>
     new Array(end - begin).fill(0).map((_, index) => begin + index);
@@ -24,6 +25,24 @@ const App: Component = () => {
     const [score, setScore] = createSignal(1);
     const [gameOver, setGameOver] = createSignal(false);
     const [gameFinished, setGameFinished] = createSignal(false);
+    const [isReplaying, setIsReplaying] = createSignal(false);
+
+    const winners: WinnerGame[] = [
+        {
+            date: new Date(),
+            username: "eubentof",
+            country: "Brazil",
+            game: [
+                91, 61, 31, 1, 4, 7, 10, 40, 70, 100, 97, 94, 72, 42, 12, 15,
+                18, 48, 30, 60, 90, 87, 84, 81, 51, 21, 3, 6, 9, 39, 69, 99, 96,
+                93, 71, 41, 11, 14, 17, 20, 50, 80, 98, 68, 38, 8, 5, 2, 32, 62,
+                92, 95, 77, 59, 29, 26, 44, 74, 56, 78, 75, 53, 23, 45, 67, 89,
+                86, 83, 65, 47, 25, 22, 52, 82, 85, 88, 58, 28, 46, 64, 34, 16,
+                19, 49, 79, 76, 73, 43, 13, 35, 57, 27, 24, 54, 36, 66, 63, 33,
+                55, 37,
+            ],
+        },
+    ];
 
     const boxSize = 50;
 
@@ -224,9 +243,13 @@ const App: Component = () => {
         return _sBox ? _sBox.index == box.index : false;
     }
 
-    function makeMove(box: Box) {
-        if (score() == 99) {
+    function makeMove(box: Box, fromReplay = false) {
+        if (isReplaying() && !fromReplay) return;
+        if (score() === 100) {
+            box.setIsPartOfSolution(true);
+            box.setValue(score());
             setGameFinished(true);
+            console.log(solutionIndexes);
             return;
         }
 
@@ -237,15 +260,16 @@ const App: Component = () => {
         if (gameOver() || notAValidMove || box.isPartOfSolution()) return;
 
         solutionIndexes.push(box.index);
-        setSelectedBox(box);
         box.setIsPartOfSolution(true);
         box.setValue(score());
+        setSelectedBox(box);
         setNextMoveOptions();
         if (validMovesIndexes.length) setScore(score() + 1);
         else setGameOver(true);
     }
 
     function resetBoxes() {
+        if (isReplaying()) return;
         setSelectedBox(undefined);
         Object.values(boxesIndexMap).forEach((box) => {
             box.setIsNextMove(false);
@@ -255,6 +279,31 @@ const App: Component = () => {
             solutionIndexes = [];
             setScore(1);
         });
+
+        setGameOver(false);
+        setGameFinished(false);
+    }
+
+    function replayGame(winner: WinnerGame) {
+        console.log(`Replaying ${winner.username}'s game`);
+
+        setIsReplaying(true);
+
+        let score = 1;
+        const speed = 50; // ms
+
+        const replayInterval = setInterval(() => {
+            if (score > winner.game.length) {
+                clearInterval(replayInterval);
+                setIsReplaying(false);
+                return;
+            }
+
+            const index = winner.game[score - 1];
+            const box = boxesIndexMap[index];
+            makeMove(box, true);
+            score++;
+        }, speed);
     }
 
     return (
@@ -266,6 +315,7 @@ const App: Component = () => {
                     ${!selectedBox() ? styles.grid__empty : ""}
                     ${gameOver() ? styles["game-over"] : ""} 
                     ${gameFinished() ? styles["game-finished"] : ""} 
+                    ${isReplaying() ? styles["replaying-game"] : ""}
                 `}
             >
                 <For each={boxes}>
@@ -279,6 +329,7 @@ const App: Component = () => {
                                         : ""
                                 } 
                                 ${box.isNextMove() ? styles["next-option"] : ""}
+                                ${isReplaying() ? styles.disabled : ""}
                                 ${
                                     box.isPartOfSolution()
                                         ? styles["part-of-solution"]
@@ -293,7 +344,12 @@ const App: Component = () => {
                     )}
                 </For>
             </div>
-            <ResetButton onReset={resetBoxes} />
+            <Button
+                onClick={resetBoxes}
+                text="reset"
+                disabled={isReplaying()}
+            />
+            <Winners winners={winners} onReplay={replayGame} />
         </div>
     );
 };
