@@ -42,6 +42,7 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 - [x] Implement the function to replay a winner game
 - [x] List the scores made user by datetime
 - [x] Revert the move by ctrl + click in the selected box
-- [ ] Save the scores in a external source
+- [x] Load the winners from external source (API)
+- [ ] Save the scores in a external source (API)
 - [ ] Add on menu the tips/tutorial
 - [ ] Add on menu the replay velocity control

@@ -25,25 +25,9 @@ const App: Component = () => {
     const [score, setScore] = createSignal(0);
     const [isReplaying, setIsReplaying] = createSignal(false);
     const [nextMoves, setNextMoves] = createSignal<number[]>([]);
+    
 
     const gameHistory: any = {};
-
-    const winners: WinnerGame[] = [
-        {
-            date: new Date(),
-            username: "eubentof",
-            country: "Brazil",
-            game: [
-                91, 61, 31, 1, 4, 7, 10, 40, 70, 100, 97, 94, 72, 42, 12, 15,
-                18, 48, 30, 60, 90, 87, 84, 81, 51, 21, 3, 6, 9, 39, 69, 99, 96,
-                93, 71, 41, 11, 14, 17, 20, 50, 80, 98, 68, 38, 8, 5, 2, 32, 62,
-                92, 95, 77, 59, 29, 26, 44, 74, 56, 78, 75, 53, 23, 45, 67, 89,
-                86, 83, 65, 47, 25, 22, 52, 82, 85, 88, 58, 28, 46, 64, 34, 16,
-                19, 49, 79, 76, 73, 43, 13, 35, 57, 27, 24, 54, 36, 66, 63, 33,
-                55, 37,
-            ],
-        },
-    ];
 
     const boxSize = 50;
 
@@ -333,21 +317,20 @@ const App: Component = () => {
     function replayGame(winner: WinnerGame) {
         resetBoxes();
 
-        console.log(`Replaying ${winner.username}'s game`);
+        console.log(`Replaying ${winner.name}'s game`);
 
         setIsReplaying(true);
 
         const speed = 0; // ms
-
+        const game = JSON.parse(winner.game);
         const replayInterval = setInterval(() => {
             if (isGameFinished() || isGameOver()) {
                 clearInterval(replayInterval);
                 setIsReplaying(false);
-                console.log("Score: ", score());
                 return;
             }
 
-            const index = winner.game[score()];
+            const index = game[score()];
             const box = boxesIndexMap[index];
             makeMove(box, true);
         }, speed);
@@ -393,10 +376,12 @@ const App: Component = () => {
             </div>
             <Button
                 onClick={resetBoxes}
-                text="reset"
-                disabled={isReplaying()}
-            />
-            <Winners winners={winners} onReplay={replayGame} />
+                color="blue"
+                disabled={isReplaying}
+            >
+                reset
+            </Button>
+            <Winners onReplay={replayGame} />
         </div>
     );
 };

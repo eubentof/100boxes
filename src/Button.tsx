@@ -1,22 +1,21 @@
-import { Component } from "solid-js";
+import { children, Component } from "solid-js";
+import styles from "./css/styles.module.css";
 
 export const Button: Component<{
     onClick?: (e: MouseEvent) => void;
-    text: string;
-    color?: string;
-    disabled?: boolean;
+    color: string;
+    disabled?: () => boolean;
+    children: string;
 }> = (props) => {
-    const { onClick, text, color = "blue", disabled } = props;
+    const { onClick, children, color, disabled } = props;
     return (
         <button
             type="button"
-            class={`inline-block px-6 py-2.5 bg-${color}-600 ${
-                color ? "text-white" : ""
-            } text-black font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-${color}-700 hover:shadow-lg focus:bg-${color}-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-${color}-800 active:shadow-lg transition duration-150 ease-in-out`}
+            class={`${styles.btn} ${styles["btn-" + color]}`}
             onClick={onClick}
-            disabled={disabled}
+            disabled={disabled ? disabled() : false}
         >
-            {text}
+            {children}
         </button>
     );
 };

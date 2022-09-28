@@ -1,18 +1,33 @@
-import { Component, For } from "solid-js";
+import { Component, createSignal, For } from "solid-js";
 import { Button } from "./Button";
 
 export interface WinnerGame {
-    date: Date;
-    username: string;
+    date: string;
+    name: string;
     country: string;
-    game: number[];
+    game: string;
 }
 
 export const Winners: Component<{
-    winners: WinnerGame[];
     onReplay: (winner: WinnerGame) => void;
 }> = (props) => {
-    const { winners, onReplay } = props;
+    const [winners, setWinners] = createSignal<WinnerGame[]>([]);
+
+    const { onReplay } = props;
+
+    async function fetchLastWinners() {
+        return fetch("http://localhost/100Boxes.api/winners/").then((r) =>
+            r.json()
+        );
+        // .then((_winners) =>
+        //     _winners.map((winner: WinnerGame) => {
+        //         winner.date = new Date(winner.date);
+        //     })
+        // );
+    }
+
+    fetchLastWinners().then(setWinners);
+
     return (
         <div class="w-3/5 mx-auto">
             <section class="mt-5 border-t-4 w-full">
@@ -21,27 +36,25 @@ export const Winners: Component<{
                     <thead class="text-left border-b-2">
                         <tr>
                             <th style="width:14rem">Date</th>
-                            <th>Username</th>
+                            <th>Name</th>
                             <th>Country</th>
                             <th class="w-20"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <For each={winners}>
+                        <For each={winners()}>
                             {(winner) => (
                                 <tr>
-                                    <td class="mr-5">
-                                        {winner.date.toLocaleDateString()} at{" "}
-                                        {winner.date.toLocaleTimeString()}
-                                    </td>
-                                    <td class="mr-5">{winner.username}</td>
+                                    <td class="mr-5">{winner.date}</td>
+                                    <td class="mr-5">{winner.name}</td>
                                     <td class="mr-5">{winner.country}</td>
                                     <td>
                                         <Button
-                                            text="replay"
                                             color="green"
                                             onClick={() => onReplay(winner)}
-                                        />
+                                        >
+                                            replay
+                                        </Button>
                                     </td>
                                 </tr>
                             )}
