@@ -44,5 +44,11 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 - [x] Revert the move by ctrl + click in the selected box
 - [x] Load the winners from external source (API)
 - [ ] Save the scores in a external source (API)
+- [ ] Save the countries in database: https://api.first.org/data/v1/countries?limit=5000&pretty=true
+- [ ] Validate username length
+- [ ] Validate country
 - [ ] Add on menu the tips/tutorial
 - [ ] Add on menu the replay velocity control
+- [ ] Share on twitter after win a game
+- [ ] Load the winners by batch (if api returns empty, stop calling it)
+- [ ] Implement this: https://www.quora.com/Is-there-a-solution-for-the-100-Boxes-game?share=1

@@ -13,8 +13,6 @@ export const Winners: Component<{
 }> = (props) => {
     const [winners, setWinners] = createSignal<WinnerGame[]>([]);
 
-    const { onReplay } = props;
-
     async function fetchLastWinners() {
         return fetch("http://localhost/100Boxes.api/winners/").then((r) =>
             r.json()
@@ -29,7 +27,7 @@ export const Winners: Component<{
     fetchLastWinners().then(setWinners);
 
     return (
-        <div class="w-3/5 mx-auto">
+        <div class="w-1/3 mb-5">
             <section class="mt-5 border-t-4 w-full">
                 <h1 class="text-2xl mt-3 text-center">Winners</h1>
                 <table class="w-full mt-4">
@@ -51,7 +49,7 @@ export const Winners: Component<{
                                     <td>
                                         <Button
                                             color="green"
-                                            onClick={() => onReplay(winner)}
+                                            onClick={() => props.onReplay(winner)}
                                         >
                                             replay
                                         </Button>

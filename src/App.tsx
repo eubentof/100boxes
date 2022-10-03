@@ -24,8 +24,7 @@ const App: Component = () => {
     const [selectedBox, setSelectedBox] = createSignal<Box>();
     const [score, setScore] = createSignal(0);
     const [isReplaying, setIsReplaying] = createSignal(false);
-    const [nextMoves, setNextMoves] = createSignal<number[]>([]);
-    
+    const [validMoves, setValidMoves] = createSignal<number[]>([]);
 
     const gameHistory: any = {};
 
@@ -59,168 +58,45 @@ const App: Component = () => {
 
     function setNextMoveOptions() {
         // Reset the last moves
-        nextMoves().forEach((index) =>
+        validMoves().forEach((index) =>
             boxesIndexMap[index].setIsNextMove(false)
         );
 
-        setNextMoves([]);
+        setValidMoves([]);
 
         const box = selectedBox();
 
         if (!box) return;
 
-        /**
-         * . . . x . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         */
-        const topMoveIndex = box.index - 30;
-        if (topMoveIndex > 0) {
-            const topMove = boxesIndexMap[topMoveIndex];
-            if (!topMove.isPartOfSolution()) {
-                topMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), topMove.index]);
-            }
-        }
+        const nextMovesCoords = [
+            [-3, 0], // top
+            [-2, 2], // top right
+            [0, 3], // right
+            [2, 2], // bottom right
+            [3, 0], // bottom
+            [2, -2], // bottom left
+            [0, -3], // left
+            [-2, -2], // top left
+        ];
 
-        /**
-         * . . . . . . .
-         * . . . . . x .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         */
-        const topRightMoveIndex = box.index - 18;
-        if (topRightMoveIndex > 0) {
-            const topRightMove = boxesIndexMap[topRightMoveIndex];
-            if (
-                topRightMove.col > box.col &&
-                !topRightMove.isPartOfSolution()
-            ) {
-                topRightMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), topRightMove.index]);
-            }
-        }
+        const allValidMoves = nextMovesCoords
+            .map(([cx, cy]) => {
+                const indexStr = `${box.row + cx}${box.col - 1 + cy}`;
+                if (indexStr.length > 2) return -1;
+                const index = Number(indexStr);
+                return Number.isInteger(index) ? Number(index) + 1 : -1;
+            })
+            .filter(
+                (index) =>
+                    boxesIndexMap[index] &&
+                    !boxesIndexMap[index].isPartOfSolution() // Filter only the boxes that are not part of the solution
+            );
 
-        /**
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . o . . x
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         */
-        const rightMoveIndex = box.index + 3;
-        if (rightMoveIndex <= 100) {
-            const rightMove = boxesIndexMap[rightMoveIndex];
-            if (rightMove.row === box.row && !rightMove.isPartOfSolution()) {
-                rightMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), rightMove.index]);
-            }
-        }
+        setValidMoves(allValidMoves);
 
-        /**
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . . . . . x .
-         * . . . . . . .
-         */
-        const bottomRightMoveIndex = box.index + 22;
-        if (bottomRightMoveIndex <= 100) {
-            const rightBottomMove = boxesIndexMap[bottomRightMoveIndex];
-            if (
-                rightBottomMove.col > box.col &&
-                !rightBottomMove.isPartOfSolution()
-            ) {
-                rightBottomMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), rightBottomMove.index]);
-            }
-        }
-
-        /**
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . x . . .
-         */
-        const bottomMoveIndex = box.index + 30;
-        if (bottomMoveIndex <= 100) {
-            const rightBottomMove = boxesIndexMap[bottomMoveIndex];
-            if (!rightBottomMove.isPartOfSolution()) {
-                rightBottomMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), rightBottomMove.index]);
-            }
-        }
-
-        /**
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . x . . . . .
-         * . . . . . . .
-         */
-        const bottomLeftMoveIndex = box.index + 18;
-        if (bottomLeftMoveIndex <= 100) {
-            const rightBottomMove = boxesIndexMap[bottomLeftMoveIndex];
-            if (
-                rightBottomMove.col < box.col &&
-                !rightBottomMove.isPartOfSolution()
-            ) {
-                rightBottomMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), rightBottomMove.index]);
-            }
-        }
-
-        /**
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         * x . . o . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         */
-        const leftMoveIndex = box.index - 3;
-        if (leftMoveIndex > 0) {
-            const leftMove = boxesIndexMap[leftMoveIndex];
-            if (box.row === leftMove.row && !leftMove.isPartOfSolution()) {
-                leftMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), leftMove.index]);
-            }
-        }
-
-        /**
-         * . . . . . . .
-         * . x . . . . .
-         * . . . . . . .
-         * . . . o . . .
-         * . . . . . . .
-         * . . . . . . .
-         * . . . . . . .
-         */
-        const topLeftMoveIndex = box.index - 22;
-        if (topLeftMoveIndex > 0) {
-            const topLeftMove = boxesIndexMap[topLeftMoveIndex];
-            if (topLeftMove.col < box.col && !topLeftMove.isPartOfSolution()) {
-                topLeftMove.setIsNextMove(true);
-                setNextMoves([...nextMoves(), topLeftMove.index]);
-            }
-        }
+        allValidMoves.forEach((index) =>
+            boxesIndexMap[index].setIsNextMove(true)
+        );
     }
 
     function isCurrentBox(box: Box) {
@@ -232,7 +108,7 @@ const App: Component = () => {
     }
 
     function isGameOver() {
-        return !isGameFinished() && score() > 0 && nextMoves().length === 0;
+        return !isGameFinished() && score() > 0 && validMoves().length === 0;
     }
 
     function revertMove(box: Box) {
@@ -286,10 +162,13 @@ const App: Component = () => {
             ctrlWasPressed && solutionIndexes.includes(box.index);
         if (isARevertMove) return revertMove(box);
 
-        if (score() === 100) return;
+        if (score() === 100) {
+            console.log(solutionIndexes);
+            return;
+        }
 
         const notAValidMove =
-            solutionIndexes.length > 0 && !nextMoves().includes(box.index);
+            solutionIndexes.length > 0 && !validMoves().includes(box.index);
 
         if (isGameOver() || notAValidMove || box.isPartOfSolution()) return;
 
@@ -308,7 +187,7 @@ const App: Component = () => {
             box.setIsNextMove(false);
             box.setIsPartOfSolution(false);
             box.setValue(undefined);
-            setNextMoves([]);
+            setValidMoves([]);
             solutionIndexes = [];
             setScore(0);
         });
@@ -321,7 +200,7 @@ const App: Component = () => {
 
         setIsReplaying(true);
 
-        const speed = 0; // ms
+        const speed = 5; // ms
         const game = JSON.parse(winner.game);
         const replayInterval = setInterval(() => {
             if (isGameFinished() || isGameOver()) {
@@ -351,20 +230,14 @@ const App: Component = () => {
                 <For each={boxes}>
                     {(box) => (
                         <div
-                            class={`
-                                ${styles.box} 
-                                ${
-                                    isCurrentBox(box)
-                                        ? styles["current-box"]
-                                        : ""
-                                } 
-                                ${box.isNextMove() ? styles["next-option"] : ""}
-                                ${isReplaying() ? styles.disabled : ""}
-                                ${
-                                    box.isPartOfSolution()
-                                        ? styles["part-of-solution"]
-                                        : ""
-                                }
+                            class={`${styles.box} 
+                            ${isCurrentBox(box) && styles["current-box"]} 
+                            ${box.isNextMove() && styles["next-option"]} 
+                            ${isReplaying() && styles.disabled} 
+                            ${
+                                box.isPartOfSolution() &&
+                                styles["part-of-solution"]
+                            }
                             `}
                             style={`width: ${boxSize}px; height: ${boxSize}px`}
                             onClick={(e) => makeMove(box, false, e)}
@@ -374,11 +247,7 @@ const App: Component = () => {
                     )}
                 </For>
             </div>
-            <Button
-                onClick={resetBoxes}
-                color="blue"
-                disabled={isReplaying}
-            >
+            <Button onClick={resetBoxes} color="blue" disabled={isReplaying()}>
                 reset
             </Button>
             <Winners onReplay={replayGame} />

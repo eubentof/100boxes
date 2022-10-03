@@ -4,18 +4,17 @@ import styles from "./css/styles.module.css";
 export const Button: Component<{
     onClick?: (e: MouseEvent) => void;
     color: string;
-    disabled?: () => boolean;
+    disabled?: boolean;
     children: string;
 }> = (props) => {
-    const { onClick, children, color, disabled } = props;
     return (
         <button
             type="button"
-            class={`${styles.btn} ${styles["btn-" + color]}`}
-            onClick={onClick}
-            disabled={disabled ? disabled() : false}
+            class={`${styles.btn} ${styles["btn-" + props.color]}`}
+            onClick={props.onClick}
+            disabled={props.disabled !== undefined ? props.disabled : false}
         >
-            {children}
+            {props.children}
         </button>
     );
 };
